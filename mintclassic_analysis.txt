@@ -1,0 +1,155 @@
+This article talks about the problem and recommendation, conclusion to the mintclassic database. The definition of the problem is how can Mint classic Company 
+can close one of their storage facility and reduce inventory while still maintaining timely service to customer.
+They want suggestion and recommendation on reorganizing and reducing inventory.
+
+
+The second step is familarizing with the database
+Familiarize yourself with the database structure to see what kind of data are stored in the database. Since the database is all about the business. Familiarity 
+with the database with lets you familiarize with the business process. Study the EER(Extended Entity relationship) to see how the tables are related/connected.
+EER is like a blueprint to the database. Using the EER you can understand how data flows. How data process and business activity occur. For example an employee
+works with a customer to make an order. An order can have many products. Each product belong to a productline and are stored in a warehouse.
+
+
+The third step is to investigate the business problem
+Review the problem. Mint Classic Company is looking to close one of its storage facility. They need recommendation and suggestion in reducing or reorganizing 
+inventory while still maintaining timely customer service.
+
+You can start to isolate the data that affects the problem you are trying to address. Which field store data related to the business problem. 
+Which table are they housed. Look at those tables carefully. Use sql to query those data.
+
+select w.warehouseCode, w.warehouseName,  w.warehousePctCap, p.quantityInStock from 
+products p, warehouses w where p.warehouseCode = w.warehouseCode;
+
+
+The average of the quantityInStock = 5046.645           i.e μ = (∑X)/N)
+Median of the quantityInStock = 5437.                   (i.e {(n+1)/2} )
+Variance of the quantityInStock = 8560732.              (i.e σ² = (∑X-μ)²/N )
+Standard deviation of the quantityInStock = 2925.873    (i.e σ = √(∑X-μ)²/N )
+
+This query displays from two tables warehouses and products to show the warehouses and the total inventory in each warehouse location.
+
+
+CREATE 
+    ALGORITHM = UNDEFINED 
+    DEFINER = `root`@`localhost` 
+    SQL SECURITY DEFINER
+VIEW `product_reduction` AS
+    SELECT 
+        `products`.`productCode` AS `productCode`,
+        `products`.`productName` AS `productName`,
+        `products`.`productLine` AS `productLine`,
+        `products`.`warehouseCode` AS `WarehouseCode`,
+        `products`.`quantityInStock` AS `quantityInstock`,
+        (`products`.`quantityInStock` - ((5 / 100) * `products`.`quantityInStock`)) AS `reduction_by_5%`
+    FROM
+        `products`;
+		
+		This code isolate the data we are concerned about and create a view called product_reduction.
+
+
+The Fouth step is to Formulate suggestion and recommendation for the business problem
+Using sql to analyze data. Are there products that are likely to be ordered. Does the price affect the sale of products. Conduct an What-if-analysis. 
+What impact will it have on the company if a reduction of quantity in hand by 5% for each item is made. Use your findings and conclusions to suggest 
+recommendation that the client will use to address business questions.
+
+After I run the creation of the product_reduction table to produce a view of the table by 5 percent. These are the data and statistcs;
+
+select productName, productLine, quantityInstock, quantityInStock - 5/100*quantityInstock as "reduction_by_5%"
+from product_reduction;
+
+
+Classic car = 38
+Motorcycle and plane = 25
+Vintage cars = 24
+Train, ship, Truck and Buses = 23
+
+The average of quantityInStock = 4794.313182  i.e X = (∑X)/N) 
+Median of quantityInStock = 5165.625           (i.e {(n+1)/2} )
+Variance = 7726060.705                          (i.e σ² = (∑X-X)²/N )
+Standard Deviation = 2792.300485                 (i.e σ = √(∑X-X)²/N )
+
+select w.warehouseCode, w.warehouseName,  w.warehousePctCap, round(sum(p.quantityInStock) - 5/100*
+sum(p.quantityInStock)) total_in_stock from product_reduction p, warehouses w where 
+p.warehouseCode = w.warehouseCode group by w.warehouseCode;
+
+
+This code displays the warehouse quantityInStock if each item is reduced by 5 percent.
+ 
+
+select p.productCode, p.productLine, p.productName, sum(od.quantityOrdered) as total_car_order from 
+product_reduction p join orderDetails od on p.productCode = od.productCode join orders o on o.orderNumber = 
+od.orderNumber where od.orderNumber in (select o.orderNumber from orders o where o.orderNumber = od.orderNumber)
+group by productName, productCode order by 4 desc limit 10;
+
+This query displays the top 10 most ordered product. The Classic Cars 1992 Ferrari 360 Spider red and 1937 Lincoln Berline are the 2 most ordered cars with 
+1808 and 1111 orders respectively.
+
+select p.productCode, p.productLine, p.productName, sum(od.quantityOrdered) as total_car_order from 
+product_reduction p join orderDetails od on p.productCode = od.productCode join orders o on o.orderNumber = od.orderNumber
+where od.orderNumber in (select o.orderNumber from orders o where o.orderNumber = od.orderNumber)
+group by productName, productCode order by 4 asc limit 10;
+
+This query displays the 10 least ordered product. The vintage cars 1957 Ford Thunderbird and 1970 Chevy Chevelle SS 454 are the two least
+ordered cars with 767 and 803 orders respectively.
+
+
+select p.productCode, p.productLine, p.productName, sum(od.quantityOrdered) as total_car_order from 
+product_reduction p join orderDetails od on p.productCode = od.productCode join orders o on o.orderNumber = od.orderNumber
+where od.orderNumber in (select o.orderNumber from orders o where o.orderNumber = od.orderNumber)
+group by productName, productCode order by 4 asc limit 10;
+
+This query displays the total orders of products by productLine and added the warehouse capacity column from the warehouse table.
+
+The average of the total_car_order  = 968.0366972 (i.e μ = (∑X)/N) 
+The median of the total_car_order = 963 (i.e {(n+1)/2} 
+The mode of the total_car_order = 972
+The variance of the total_car_order = 10354.53076 (i.e σ² = (∑X-μ)²/N )
+The standard deviation of the total_car_order = 101.7572148 (i.e σ = √(∑X-μ)²/N )
+ 
+
+The Fifth step is Describing your recommendations and conclusions, supporting them with sql script.
+
+Two things are key to my conclusions. Firstly, warehousecode A stores productLine like motorcycle, planes, and warehousecode B stores classic cars, 
+warehousecode C stores vintage cars while warehousecode D stores trucks & buses, trains and ships. All having a warehouse percentage capacity of 72, 67, 50, 75 
+respectively. Ideally warehouse capacity utilization might seem like it should be 100%. However, the ideal number is actually closer to 80%. 
+
+
+Secondly, The total quantity in stock for warehousecode a, b, c, d are 125104, 208224, 118636, 75411 respectively. The total quantity ordered for warehousecode
+a, b, c, d are 24650, 35582, 22933, 22351 respectively.
+
+select p.warehouseCode, w.warehouseName, sum(o.quantityOrdered) total_order from product_reduction p join 
+orderdetails o on p.productCode = o.productCode join warehouses w on p.warehouseCode = w.warehouseCode 
+group by warehouseName, warehouseCode;
+
+This query display the sum of the quantity ordered by warehouseName and warehouseCode.
+
+The average of the total_order = 26379.00 (i.e i.e μ = (∑X)/N)
+The median of the total_order = 23791.50 (i.e {(n+1)/2} )
+The variance of the total_order = 28946087.50 (i.e σ² = (∑X-μ)²/N )
+The standard deviation of the total_order = 5380.16 (i.e σ = √(∑X-μ)²/N )
+
+ 
+
+
+This analysis covers descriptive and inferential statistics. The descriptive statistics gives the central tendency of the data, while the inferential statistics
+ uses that central tendency to make inferences.
+ 
+The limitation of the analysis are listed as follows;
+1. Two statistcs analysis are used
+2. The sample data collected does not accurately represent the entire population
+3. The hypothesis test is not carried out more times to produce an accurate confidence interval.
+
+
+
+														z = X-μ/σ/√n
+														where X is the sample mean 
+														μ is the population mean
+														σ is the standard deviation
+														n is the sample size
+														
+														t = 4794.313182 - 5046.645 /2792.300485 / √109
+														t = 4775.444
+														
+
+As 4775.444 > 1.64
+Thus it is concluded that the production reduction by 5% helped in reducing warehouse inventory and maintaining timely service to customers.
