@@ -11,7 +11,7 @@ The third step is to investigate the business problem
 Review the problem. Mint Classic Company is looking to close one of its storage facility. They need recommendation and suggestion in reducing or reorganizing 
 inventory while still maintaining timely customer service.
 
-The Fouth step is to Formulate suggestion and recommendation for the business   problem.
+The Fourth step is to Formulate suggestion and recommendation for the business   problem.
 Using sql to analyze data, are there products that are likely to be ordered.    Does the price affect the sale of products. Conduct an What-if-analysis.
 What impact will it have on the company if a reduction of quantity in hand by 5% for each item is made. Use your findings and conclusions to suggest
 recommendation that the client will use to address business questions.
